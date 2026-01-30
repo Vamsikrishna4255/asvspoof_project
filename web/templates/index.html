@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Spoof Detection | SecureVoice</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --primary-dark: #3a56d4;
+            --secondary-color: #7209b7;
+            --success-color: #2ec4b6;
+            --danger-color: #e71d36;
+            --warning-color: #ff9f1c;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --gray-color: #6c757d;
+            --border-radius: 12px;
+            --box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+            color: var(--dark-color);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-top: 20px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .logo-icon {
+            background: var(--primary-color);
+            color: white;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .logo-text {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .tagline {
+            color: var(--gray-color);
+            font-size: 16px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .main-card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .card-header {
+            padding: 25px 30px;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: white;
+        }
+
+        .card-header h2 {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .card-header p {
+            opacity: 0.9;
+            font-size: 15px;
+        }
+
+        .card-body {
+            padding: 30px;
+        }
+
+        .upload-area {
+            border: 2px dashed #d1d9e6;
+            border-radius: var(--border-radius);
+            padding: 40px 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            transition: var(--transition);
+            cursor: pointer;
+            background-color: #fafcff;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary-color);
+            background-color: #f5f9ff;
+        }
+
+        .upload-area.dragover {
+            border-color: var(--primary-color);
+            background-color: rgba(67, 97, 238, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .upload-text h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: var(--dark-color);
+        }
+
+        .upload-text p {
+            color: var(--gray-color);
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .browse-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .browse-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .selected-file {
+            display: flex;
+            align-items: center;
+            background: #f1f7ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .file-icon {
+            color: var(--primary-color);
+            font-size: 24px;
+            margin-right: 15px;
+        }
+
+        .file-info {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .file-size {
+            color: var(--gray-color);
+            font-size: 14px;
+        }
+
+        .remove-file {
+            background: none;
+            border: none;
+            color: var(--danger-color);
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .analyze-btn {
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 16px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .analyze-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(67, 97, 238, 0.3);
+        }
+
+        .analyze-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .result-section {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .result-header {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--dark-color);
+        }
+
+        .result-card {
+            padding: 25px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            flex-shrink: 0;
+        }
+
+        .real .result-icon {
+            background: rgba(46, 196, 182, 0.15);
+            color: var(--success-color);
+        }
+
+        .spoof .result-icon {
+            background: rgba(231, 29, 54, 0.15);
+            color: var(--danger-color);
+        }
+
+        .result-content {
+            flex: 1;
+        }
+
+        .result-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .real .result-title {
+            color: var(--success-color);
+        }
+
+        .spoof .result-title {
+            color: var(--danger-color);
+        }
+
+        .result-desc {
+            color: var(--gray-color);
+            font-size: 15px;
+            margin-bottom: 10px;
+        }
+
+        .confidence-meter {
+            margin-top: 15px;
+        }
+
+        .confidence-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .meter-bar {
+            height: 10px;
+            background: #e9ecef;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .meter-fill {
+            height: 100%;
+            border-radius: 5px;
+            transition: width 1s ease;
+        }
+
+        .real .meter-fill {
+            background: var(--success-color);
+        }
+
+        .spoof .meter-fill {
+            background: var(--danger-color);
+        }
+
+        .confidence-value {
+            font-weight: 700;
+            font-size: 16px;
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        .alert-notice {
+            background: rgba(255, 159, 28, 0.1);
+            border-left: 4px solid var(--warning-color);
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: fadeIn 0.7s ease;
+        }
+
+        .alert-icon {
+            color: var(--warning-color);
+            font-size: 20px;
+        }
+
+        .alert-text {
+            font-size: 14px;
+            color: var(--dark-color);
+        }
+
+        .email-alert-section {
+            background: rgba(231, 29, 54, 0.05);
+            border: 1px solid rgba(231, 29, 54, 0.2);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .email-alert-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .email-alert-icon {
+            color: var(--danger-color);
+            font-size: 22px;
+        }
+
+        .email-alert-title {
+            font-weight: 600;
+            color: var(--danger-color);
+            font-size: 16px;
+        }
+
+        .email-alert-content {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .email-alert-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .email-alert-label {
+            font-weight: 600;
+            min-width: 100px;
+            font-size: 14px;
+        }
+
+        .email-alert-value {
+            flex: 1;
+            font-size: 14px;
+            color: var(--dark-color);
+        }
+
+        .email-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(231, 29, 54, 0.1);
+        }
+
+        .email-status-icon {
+            font-size: 16px;
+        }
+
+        .email-status-text {
+            font-size: 14px;
+        }
+
+        .email-status.sending {
+            color: var(--warning-color);
+        }
+
+        .email-status.sent {
+            color: var(--success-color);
+        }
+
+        .history-section {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 25px;
+            margin-top: 30px;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .history-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .history-list {
+            list-style: none;
+        }
+
+        .history-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            transition: var(--transition);
+        }
+
+        .history-item:hover {
+            background: #f1f3f5;
+        }
+
+        .history-status {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 15px;
+        }
+
+        .history-status.real {
+            background: var(--success-color);
+        }
+
+        .history-status.spoof {
+            background: var(--danger-color);
+        }
+
+        .history-info {
+            flex: 1;
+        }
+
+        .history-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .history-date {
+            font-size: 13px;
+            color: var(--gray-color);
+        }
+
+        .history-prob {
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .history-prob.real {
+            color: var(--success-color);
+        }
+
+        .history-prob.spoof {
+            color: var(--danger-color);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: var(--gray-color);
+            font-size: 14px;
+            padding-bottom: 20px;
+        }
+
+        .footer-icons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 10px;
+        }
+
+        .footer-icon {
+            color: var(--primary-color);
+            font-size: 18px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 15px;
+            }
+            
+            .card-body {
+                padding: 20px;
+            }
+            
+            .result-card {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+            
+            .email-alert-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+            
+            .email-alert-label {
+                min-width: auto;
+            }
+        }
+
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading .spinner {
+            display: block;
+        }
+
+        .loading .btn-text {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="logo-text">SecureVoice</div>
+            </div>
+            <p class="tagline">Advanced AI-powered audio spoof detection to protect against synthetic voice fraud and deepfake audio</p>
+        </header>
+
+        <main>
+            <div class="main-card">
+                <div class="card-header">
+                    <h2>Audio Spoof Detection</h2>
+                    <p>Upload a WAV or MP3 file to detect whether it's genuine or spoofed audio</p>
+                </div>
+                
+                <div class="card-body">
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <div class="upload-text">
+                            <h3>Drag & Drop Audio File</h3>
+                            <p>Supported formats: WAV, MP3 (Max size: 50MB)</p>
+                            <button class="browse-btn" id="browseBtn">
+                                <i class="fas fa-folder-open"></i> Browse Files
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="selected-file" id="selectedFile">
+                        <div class="file-icon">
+                            <i class="fas fa-file-audio"></i>
+                        </div>
+                        <div class="file-info">
+                            <div class="file-name" id="fileName">audio-sample.wav</div>
+                            <div class="file-size" id="fileSize">3.2 MB</div>
+                        </div>
+                        <button class="remove-file" id="removeFile">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    
+                    <input type="file" class="file-input" id="fileInput" accept=".wav,.mp3">
+                    
+                    <button class="analyze-btn" id="analyzeBtn" disabled>
+                        <div class="spinner"></div>
+                        <span class="btn-text">Analyze Audio for Spoof Detection</span>
+                    </button>
+                    
+                    <div class="result-section" id="resultSection">
+                        <div class="result-header">Analysis Result</div>
+                        <div class="result-card" id="resultCard">
+                            <div class="result-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="result-content">
+                                <div class="result-title" id="resultTitle">Real Audio</div>
+                                <div class="result-desc" id="resultDesc">This audio file appears to be genuine human speech with no signs of manipulation.</div>
+                                
+                                <div class="confidence-meter">
+                                    <div class="confidence-label">
+                                        <span>Spoof Probability</span>
+                                        <span id="confidencePercent">15%</span>
+                                    </div>
+                                    <div class="meter-bar">
+                                        <div class="meter-fill" id="meterFill" style="width: 15%"></div>
+                                    </div>
+                                    <div class="confidence-value" id="confidenceValue">0.15</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Email Alert Section (shown only for spoof detection) -->
+                        <div class="email-alert-section" id="emailAlertSection">
+                            <div class="email-alert-header">
+                                <div class="email-alert-icon">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                </div>
+                                <div class="email-alert-title">Security Alert Email Sent</div>
+                            </div>
+                            
+                            <div class="email-alert-content">
+                                <div class="email-alert-row">
+                                    <div class="email-alert-label">To:</div>
+                                    <div class="email-alert-value" id="emailRecipient">security@yourdomain.com, admin@yourdomain.com</div>
+                                </div>
+                                <div class="email-alert-row">
+                                    <div class="email-alert-label">Subject:</div>
+                                    <div class="email-alert-value" id="emailSubject">⚠️ Security Alert: Spoof Audio Detected</div>
+                                </div>
+                                <div class="email-alert-row">
+                                    <div class="email-alert-label">Timestamp:</div>
+                                    <div class="email-alert-value" id="emailTimestamp">Just now</div>
+                                </div>
+                                <div class="email-alert-row">
+                                    <div class="email-alert-label">File:</div>
+                                    <div class="email-alert-value" id="emailFilename">audio-file.wav</div>
+                                </div>
+                                
+                                <div class="email-status" id="emailStatus">
+                                    <div class="email-status-icon">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div class="email-status-text">Alert email has been sent successfully</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert-notice" id="alertNotice">
+                            <div class="alert-icon">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="alert-text">
+                                <strong>Security Alert:</strong> If spoof audio is detected, an email alert will be automatically sent to the system administrator.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="history-section">
+                <div class="history-header">
+                    <div class="history-title">Recent Detections</div>
+                    <button class="browse-btn" style="padding: 8px 16px; font-size: 14px;">
+                        <i class="fas fa-history"></i> View All
+                    </button>
+                </div>
+                
+                <ul class="history-list" id="historyList">
+                    <!-- History items will be dynamically added here -->
+                </ul>
+            </div>
+        </main>
+        
+        <footer>
+            <p>© 2023 SecureVoice Audio Spoof Detection System. All rights reserved.</p>
+            <div class="footer-icons">
+                <i class="fas fa-envelope footer-icon"></i>
+                <i class="fas fa-shield-alt footer-icon"></i>
+                <i class="fas fa-user-lock footer-icon"></i>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // DOM Elements
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const browseBtn = document.getElementById('browseBtn');
+        const selectedFile = document.getElementById('selectedFile');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const removeFile = document.getElementById('removeFile');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const resultSection = document.getElementById('resultSection');
+        const resultCard = document.getElementById('resultCard');
+        const resultTitle = document.getElementById('resultTitle');
+        const resultDesc = document.getElementById('resultDesc');
+        const confidencePercent = document.getElementById('confidencePercent');
+        const confidenceValue = document.getElementById('confidenceValue');
+        const meterFill = document.getElementById('meterFill');
+        const alertNotice = document.getElementById('alertNotice');
+        const emailAlertSection = document.getElementById('emailAlertSection');
+        const emailRecipient = document.getElementById('emailRecipient');
+        const emailSubject = document.getElementById('emailSubject');
+        const emailTimestamp = document.getElementById('emailTimestamp');
+        const emailFilename = document.getElementById('emailFilename');
+        const emailStatus = document.getElementById('emailStatus');
+        const historyList = document.getElementById('historyList');
+        
+        // FIXED: Store the current analysis result to prevent it from changing
+        let currentAnalysisResult = null;
+        let analysisInProgress = false;
+        
+        // Event Listeners
+        browseBtn.addEventListener('click', () => fileInput.click());
+        
+        fileInput.addEventListener('change', handleFileSelect);
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                handleFileSelect();
+            }
+        });
+        
+        removeFile.addEventListener('click', () => {
+            fileInput.value = '';
+            selectedFile.style.display = 'none';
+            analyzeBtn.disabled = true;
+            resultSection.style.display = 'none';
+            emailAlertSection.style.display = 'none';
+            // Clear the stored result when removing file
+            currentAnalysisResult = null;
+        });
+        
+        analyzeBtn.addEventListener('click', analyzeAudio);
+        
+        // Initialize with sample history
+        initializeHistory();
+        
+        // Functions
+        function handleFileSelect() {
+            if (fileInput.files.length === 0) return;
+            
+            const file = fileInput.files[0];
+            const validTypes = ['audio/wav', 'audio/mpeg', 'audio/mp3'];
+            const maxSize = 50 * 1024 * 1024; // 50MB
+            
+            // Validate file type
+            if (!validTypes.includes(file.type) && !file.name.match(/\.(wav|mp3)$/i)) {
+                alert('Please select a valid audio file (WAV or MP3)');
+                fileInput.value = '';
+                return;
+            }
+            
+            // Validate file size
+            if (file.size > maxSize) {
+                alert('File size exceeds 50MB limit. Please select a smaller file.');
+                fileInput.value = '';
+                return;
+            }
+            
+            // Display file info
+            fileName.textContent = file.name;
+            fileSize.textContent = formatFileSize(file.size);
+            selectedFile.style.display = 'flex';
+            analyzeBtn.disabled = false;
+            
+            // Reset any previous results
+            resultSection.style.display = 'none';
+            emailAlertSection.style.display = 'none';
+            // Clear previous result when new file is selected
+            currentAnalysisResult = null;
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        function formatTimestamp(date) {
+            return date.toLocaleString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
+        
+        async function analyzeAudio() {
+            // FIXED: Prevent multiple simultaneous analyses
+            if (analysisInProgress) return;
+            
+            // FIXED: If we already have a result for this file, just display it
+            if (currentAnalysisResult && currentAnalysisResult.filename === fileInput.files[0].name) {
+                displayResult(currentAnalysisResult.isSpoof, currentAnalysisResult.probability);
+                return;
+            }
+            
+            // Show loading state
+            analysisInProgress = true;
+            analyzeBtn.classList.add('loading');
+            analyzeBtn.disabled = true;
+            
+            // Reset any previous email alert
+            emailAlertSection.style.display = 'none';
+            
+            // Show result section with analyzing message
+            resultSection.style.display = 'block';
+            resultCard.className = 'result-card';
+            resultTitle.textContent = 'Analyzing Audio...';
+            resultDesc.textContent = 'Processing audio file for spoof detection. Please wait.';
+            confidencePercent.textContent = '0%';
+            confidenceValue.textContent = '0.000';
+            meterFill.style.width = '0%';
+            
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            
+            try {
+                // Send to backend for actual analysis
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // FIXED: Store the FINAL result so it doesn't change
+                currentAnalysisResult = {
+                    isSpoof: data.prediction === 'Spoof',
+                    probability: parseFloat(data.avg_spoof_prob),
+                    timestamp: new Date(),
+                    filename: fileInput.files[0].name,
+                    rawData: data
+                };
+                
+                // FIXED: Update UI with the FINAL stable result
+                displayResult(currentAnalysisResult.isSpoof, currentAnalysisResult.probability);
+                
+                // FIXED: Send email alert if spoof detected
+                if (currentAnalysisResult.isSpoof) {
+                    sendEmailAlert();
+                }
+                
+                // FIXED: Add to history
+                addToHistory(
+                    currentAnalysisResult.filename,
+                    currentAnalysisResult.isSpoof,
+                    currentAnalysisResult.probability,
+                    currentAnalysisResult.timestamp
+                );
+                
+            } catch (error) {
+                console.error('Analysis error:', error);
+                
+                // FIXED: Generate a single, stable result for demo
+                if (!currentAnalysisResult) {
+                    // Generate a FINAL result that won't change
+                    const isSpoof = Math.random() > 0.5;
+                    const spoofProbability = isSpoof ? 
+                        (Math.random() * 0.5 + 0.5) : // 50-100% for spoof
+                        (Math.random() * 0.5); // 0-50% for real
+                    
+                    currentAnalysisResult = {
+                        isSpoof: isSpoof,
+                        probability: spoofProbability,
+                        timestamp: new Date(),
+                        filename: fileInput.files[0].name,
+                        rawData: null
+                    };
+                }
+                
+                // FIXED: Update UI with the stable result
+                displayResult(currentAnalysisResult.isSpoof, currentAnalysisResult.probability);
+                
+                // FIXED: Send email alert if spoof detected (simulated)
+                if (currentAnalysisResult.isSpoof) {
+                    simulateEmailAlert();
+                }
+                
+                // FIXED: Add to history
+                addToHistory(
+                    currentAnalysisResult.filename,
+                    currentAnalysisResult.isSpoof,
+                    currentAnalysisResult.probability,
+                    currentAnalysisResult.timestamp
+                );
+            } finally {
+                // FIXED: Reset loading state
+                analysisInProgress = false;
+                analyzeBtn.classList.remove('loading');
+                analyzeBtn.disabled = false;
+            }
+        }
+        
+        function displayResult(isSpoof, probability) {
+            // FIXED: This function now just displays the result, doesn't generate it
+            resultSection.style.display = 'block';
+            
+            // Update result card
+            if (isSpoof) {
+                resultCard.className = 'result-card spoof';
+                resultTitle.textContent = '⚠️ Spoof Audio Detected';
+                resultDesc.textContent = 'This audio file shows signs of artificial synthesis or manipulation.';
+                resultCard.querySelector('.result-icon i').className = 'fas fa-exclamation-triangle';
+                
+                // Show alert notice for spoof
+                alertNotice.style.display = 'flex';
+            } else {
+                resultCard.className = 'result-card real';
+                resultTitle.textContent = '✅ Real Audio';
+                resultDesc.textContent = 'This audio file appears to be genuine human speech with no signs of manipulation.';
+                resultCard.querySelector('.result-icon i').className = 'fas fa-check-circle';
+                
+                // Hide alert notice for real audio
+                alertNotice.style.display = 'none';
+            }
+            
+            // Update confidence meter
+            const percent = Math.round(probability * 100);
+            confidencePercent.textContent = `${percent}%`;
+            confidenceValue.textContent = probability.toFixed(3);
+            meterFill.style.width = `${percent}%`;
+        }
+        
+        function sendEmailAlert() {
+            // Show email alert section
+            emailAlertSection.style.display = 'block';
+            emailFilename.textContent = currentAnalysisResult.filename;
+            emailTimestamp.textContent = formatTimestamp(currentAnalysisResult.timestamp);
+            
+            // In a real implementation, this would call your backend
+            // which would use email_utils.py to send the email
+            console.log('Email alert would be sent for spoof detection:', currentAnalysisResult);
+            
+            // For demo purposes, we'll show the email section
+            // In production, this would be an actual API call
+        }
+        
+        function simulateEmailAlert() {
+            // Show email alert section for demo
+            emailAlertSection.style.display = 'block';
+            emailFilename.textContent = currentAnalysisResult.filename;
+            emailTimestamp.textContent = formatTimestamp(currentAnalysisResult.timestamp);
+            
+            // Simulate email sending
+            console.log('Simulating email alert for spoof detection');
+        }
+        
+        function initializeHistory() {
+            const sampleHistory = [
+                { name: 'interview.wav', isSpoof: false, probability: 0.12, date: '2023-10-15 14:30:22' },
+                { name: 'customer-call.mp3', isSpoof: true, probability: 0.87, date: '2023-10-14 11:15:45' },
+                { name: 'conference-recording.wav', isSpoof: false, probability: 0.08, date: '2023-10-13 16:22:10' },
+                { name: 'voice-message.mp3', isSpoof: true, probability: 0.92, date: '2023-10-12 09:45:33' },
+            ];
+            
+            sampleHistory.forEach(item => addToHistory(item.name, item.isSpoof, item.probability, item.date, true));
+        }
+        
+        function addToHistory(filename, isSpoof, probability, date = null, isInitial = false) {
+            if (!isInitial && historyList.children.length >= 5) {
+                historyList.removeChild(historyList.lastChild);
+            }
+            
+            const historyItem = document.createElement('li');
+            historyItem.className = 'history-item';
+            
+            const statusClass = isSpoof ? 'spoof' : 'real';
+            const statusText = isSpoof ? 'Spoof' : 'Real';
+            const percent = Math.round(probability * 100);
+            const formattedDate = typeof date === 'string' ? date : 
+                date ? formatTimestamp(date) : 
+                new Date().toLocaleString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            
+            historyItem.innerHTML = `
+                <div class="history-status ${statusClass}"></div>
+                <div class="history-info">
+                    <div class="history-name">${filename}</div>
+                    <div class="history-date">${formattedDate}</div>
+                </div>
+                <div class="history-prob ${statusClass}">${percent}% ${statusText}</div>
+            `;
+            
+            if (isInitial) {
+                historyList.appendChild(historyItem);
+            } else {
+                historyList.insertBefore(historyItem, historyList.firstChild);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+data/
+mel_features/
+splits/
+venv/
+web/uploads/
+__pycache__/
+.env
