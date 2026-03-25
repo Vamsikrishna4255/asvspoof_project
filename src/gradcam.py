@@ -1,7 +1,8 @@
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
-from model import SimpleCNN
+
+from model_bal import StableCNN
 
 # ---------------- CONFIG ----------------
 MODEL_PATH = "models/best_model.pth"
@@ -12,7 +13,7 @@ TARGET_CLASS = 1  # 0 = real, 1 = spoof
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Load model
-model = SimpleCNN().to(device)
+model = StableCNN().to(device)
 model.load_state_dict(torch.load(MODEL_PATH, map_location=device))
 model.eval()
 

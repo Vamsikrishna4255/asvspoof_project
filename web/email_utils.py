@@ -9,7 +9,7 @@ SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
 
 SENDER_EMAIL = "krishnavamsi0842@gmail.com"       # Your Gmail
-APP_PASSWORD = "paeg xkkj nsfc evzl"           # 16-char Gmail App Password (NO SPACES)
+APP_PASSWORD = "yofe cgoe mdqf pebg"           # 16-char Gmail App Password (NO SPACES)
 
 RECIPIENTS = [
     "krishnavamsi0842@gmail.com",
@@ -41,12 +41,18 @@ Please take necessary action.
 
     # Send email
     try:
+        print(f"[DEBUG] Connecting to {SMTP_SERVER}:{SMTP_PORT}...")
         server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+        print(f"[DEBUG] Connected. Starting TLS...")
         server.starttls()
+        print(f"[DEBUG] TLS started. Logging in as {SENDER_EMAIL}...")
         server.login(SENDER_EMAIL, APP_PASSWORD)
+        print(f"[DEBUG] Login successful. Sending email to {RECIPIENTS}...")
         server.sendmail(SENDER_EMAIL, RECIPIENTS, message.as_string())
         server.quit()
         print("✅ Spoof alert email sent successfully!")
 
     except Exception as e:
+        import traceback
         print("❌ Failed to send email:", e)
+        traceback.print_exc()

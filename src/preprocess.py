@@ -1,42 +1,12 @@
 import os
-import librosa
-import numpy as np
 from tqdm import tqdm
+from audio_utils import extract_mel
 
 # ---------------- CONFIG ----------------
 BASE_DATA = r"C:\Users\krish\Downloads\asvspoof_project\data\ASVspoof2019_LA"
 OUT_BASE  = r"C:\Users\krish\Downloads\asvspoof_project\mel_features"
 
-SR = 16000
-N_MELS = 64
-MAX_FRAMES = 300
-TOP_DB = 20
 # ----------------------------------------
-
-
-def extract_mel(audio_path):
-    y, sr = librosa.load(audio_path, sr=SR, mono=True)
-    y, _ = librosa.effects.trim(y, top_db=TOP_DB)
-
-    # Normalize amplitude
-    y = y / (np.max(np.abs(y)) + 1e-9)
-
-    mel = librosa.feature.melspectrogram(
-        y=y, sr=SR, n_mels=N_MELS
-    )
-    mel = librosa.power_to_db(mel, ref=np.max)
-
-    # Pad or truncate
-    if mel.shape[1] > MAX_FRAMES:
-        mel = mel[:, :MAX_FRAMES]
-    else:
-        mel = np.pad(
-            mel,
-            ((0, 0), (0, MAX_FRAMES - mel.shape[1])),
-            mode="constant"
-        )
-
-    return mel
 
 
 def process_split(split_name, out_dir):
@@ -53,6 +23,7 @@ def process_split(split_name, out_dir):
             continue  # skip already processed files
 
         mel = extract_mel(in_path)
+        os.makedirs(os.path.dirname(out_path), exist_ok=True)
         np.save(out_path, mel)
 
 
