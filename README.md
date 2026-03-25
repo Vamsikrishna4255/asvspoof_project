@@ -1,4 +1,4 @@
-# 🔊 DeepFakeShield: For Spoof And Real Audio Detection System
+# 🔊 DeepFakeShield: For Spoof And Real Audio Detection 
 
 ## 📌 Overview
 DeepFakeShield is an AI-based system designed to detect whether an audio file is **Real or Fake** using deep learning techniques.  
